@@ -1,7 +1,8 @@
 import streamlit as st
+import pytest
 import pandas as pd
 from datetime import datetime
-from tasks import load_tasks, save_tasks, filter_tasks_by_priority, filter_tasks_by_category
+from tasks import load_tasks, save_tasks, filter_tasks_by_priority, filter_tasks_by_category, generate_unique_id
 
 def main():
     st.title("To-Do Application")
@@ -23,7 +24,7 @@ def main():
         
         if submit_button and task_title:
             new_task = {
-                "id": len(tasks) + 1,
+                "id": generate_unique_id(tasks),
                 "title": task_title,
                 "description": task_description,
                 "priority": task_priority,
@@ -79,5 +80,68 @@ def main():
                 save_tasks(tasks)
                 st.rerun()
 
+def run_test_basic():
+    exit_code = pytest.main(["tests/test_basic.py", "-q"])
+    if exit_code == 0:
+        return "All tests passed!"
+    return f"Tests failed with code {exit_code}."
+
+def run_test_coverage():
+    exit_code = pytest.main(["--cov=tasks", "tests/", "-q", "--cov-report", "term-missing"])
+    if exit_code == 0:
+        return "Coverage test passed!"
+    return f"Coverage test failed with code {exit_code}."
+
+def run_test_parametrization():
+    exit_code = pytest.main(["tests/test_advanced.py::test_filter_tasks_by_priority_param", "-q"])
+    if exit_code == 0:
+        return "Parametrization tests passed!"
+    return f"Parametrization tests failed with code {exit_code}"
+
+def run_test_mocking():
+    exit_code = pytest.main(["tests/test_advanced.py::test_load_tasks_mocked", "-q"])
+    if exit_code == 0:
+        return "Mocking test passed!"
+    return f"Mocking test failed with code {exit_code}."
+
+def run_html_report():
+    pytest.main(["tests/", "--html=report.html", "--self-contained-html"])
+    return "HTML report generated successfully! Check 'report.html' file."
+
+def run_tdd_tests():
+    exit_code = pytest.main(["tests/test_tdd.py", "-q"])
+    if exit_code == 0:
+        return "TDD tests passed!"
+    return f"TDD tests failed with code {exit_code}."
+
+def run_bdd_tests():
+    exit_code = pytest.main(["tests/feature/steps/test_add_steps.py", "-q"])
+    if exit_code == 0:
+        return "BDD tests passed!"
+    return f"BDD tests failed with code {exit_code}."
+
 if __name__ == "__main__":
     main()
+
+    st.sidebar.header("Testing")
+
+    if st.sidebar.button("Run Tests Basic"):
+        st.sidebar.text_area("Test Basic Output", run_test_basic(), height=300)
+
+    if st.sidebar.button("Run Coverage Tests"):
+        st.sidebar.text_area("Coverage Test Output", run_test_coverage(), height=300)
+
+    if st.sidebar.button("Run Parametrization Tests"):
+        st.sidebar.text_area("Parametrization Test Output", run_test_parametrization(), height=300)
+
+    if st.sidebar.button("Run Mocking Tests"):
+        st.sidebar.text_area("Mocking Test Output", run_test_mocking(), height=300)
+
+    if st.sidebar.button("Generate HTML Report"):
+        st.sidebar.success(run_html_report())
+
+    if st.sidebar.button("Run TDD Tests"):
+        st.sidebar.text_area("TDD Tests Output", run_tdd_tests(), height=300)
+
+    if st.sidebar.button("Run BDD Tests"):
+        st.sidebar.text_area("BDD Test Output", run_bdd_tests(), height=300)

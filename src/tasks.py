@@ -123,3 +123,8 @@ def get_overdue_tasks(tasks):
         if not task.get("completed", False) and 
            task.get("due_date", "") < today
     ]
+
+def mark_all_tasks_completed(tasks):
+    for task in tasks:
+        task["completed"] = True
+    return tasks
